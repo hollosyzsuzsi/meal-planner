@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MealsPage } from './pages/MealsPage';
 import { PlannerPage } from './pages/PlannerPage';
+import { ShoppingPage } from './pages/ShoppingPage';
 import './styles/global.css';
 
 type Page = 'meals' | 'planner' | 'shopping';
@@ -37,14 +38,7 @@ export default function App() {
       <main className="main-content">
         {page === 'meals' && <MealsPage />}
         {page === 'planner' && <PlannerPage />}
-        {page === 'shopping' && (
-          <div className="page">
-            <h1 className="page__title">Shopping list</h1>
-            <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-              Your shopping list will appear once a weekly plan is generated.
-            </p>
-          </div>
-        )}
+        {page === 'shopping' && <ShoppingPage />}
       </main>
     </div>
   );
