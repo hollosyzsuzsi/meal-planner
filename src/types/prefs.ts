@@ -1,12 +1,16 @@
-import { type CuisineType, type DietaryTag } from './meal';
+export type CookingFrequency = 'daily' | 'every2days' | 'every3days';
 
 export interface UserPreferences {
   id: string;
-  variety_mode: boolean;         // avoid repeating cuisine types
-  shared_ingredients: boolean;   // prefer meals sharing ingredients
-  dietary_filters: DietaryTag[];
-  excluded_cuisines: CuisineType[];
-  max_prep_time: number | null;  // minutes, null = no limit
+  variety_cuisines: boolean;      // avoid same cuisine type across the week
+  shared_ingredients: boolean;    // prefer meals that share ingredients
+  cooking_frequency: CookingFrequency; // how often user wants to cook
 }
 
 export type PreferencesFormData = Omit<UserPreferences, 'id'>;
+
+export const DEFAULT_PREFERENCES: PreferencesFormData = {
+  variety_cuisines: true,
+  shared_ingredients: false,
+  cooking_frequency: 'daily',
+};
