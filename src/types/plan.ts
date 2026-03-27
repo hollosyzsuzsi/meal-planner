@@ -7,19 +7,36 @@ export interface DayPlan {
 
 export interface WeekPlan {
   id: string;
-  week_start: string; // ISO date string
+  week_start: string;
   days: DayPlan[];
   created_at: string;
 }
+
+export type IngredientCategory =
+  | 'produce'
+  | 'meat & fish'
+  | 'dairy & eggs'
+  | 'grains & pasta'
+  | 'canned & dry'
+  | 'condiments & spices'
+  | 'other';
 
 export interface ShoppingItem {
   name: string;
   quantity: number;
   unit: string;
-  meals: string[]; // meal names that use this ingredient
+  category: IngredientCategory;
+  meals: string[];   // meal names that use this ingredient
+  checked: boolean;
+}
+
+export interface ShoppingGroup {
+  category: IngredientCategory;
+  items: ShoppingItem[];
 }
 
 export interface ShoppingList {
   week_plan_id: string;
-  items: ShoppingItem[];
+  week_start: string;
+  groups: ShoppingGroup[];
 }
