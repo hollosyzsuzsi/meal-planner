@@ -1,37 +1,38 @@
 import { type Meal } from './meal';
 
-export interface DayPlan {
-  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+export type DayOfWeek =
+  | 'monday' | 'tuesday' | 'wednesday'
+  | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+export interface WeekPlanDay {
+  id: string;
+  week_plan_id: string;
+  day: DayOfWeek;
+  meal_id: string;
   meal: Meal;
 }
 
 export interface WeekPlan {
   id: string;
   week_start: string;
-  days: DayPlan[];
+  days: WeekPlanDay[];
   created_at: string;
 }
 
-export type IngredientCategory =
-  | 'produce'
-  | 'meat & fish'
-  | 'dairy & eggs'
-  | 'grains & pasta'
-  | 'canned & dry'
-  | 'condiments & spices'
-  | 'other';
-
 export interface ShoppingItem {
-  name: string;
+  ingredient_id: string;
+  ingredient_name: string;
+  category_id: string;
+  category_name: string;
   quantity: number;
   unit: string;
-  category: IngredientCategory;
-  meals: string[];   // meal names that use this ingredient
+  meals: string[];
   checked: boolean;
 }
 
 export interface ShoppingGroup {
-  category: IngredientCategory;
+  category_id: string;
+  category_name: string;
   items: ShoppingItem[];
 }
 

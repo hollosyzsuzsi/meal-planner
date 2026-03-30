@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Meal, type MealFormData } from '../types/meal';
-import { fetchMeals, createMeal, updateMeal, deleteMeal } from '../lib/supabase';
+import { fetchMeals, createMeal, updateMeal, deleteMeal, createIngredient } from '../lib/supabase';
 
 interface UseMealsReturn {
   meals: Meal[];
@@ -9,7 +9,6 @@ interface UseMealsReturn {
   addMeal: (data: MealFormData) => Promise<void>;
   editMeal: (id: string, data: MealFormData) => Promise<void>;
   removeMeal: (id: string) => Promise<void>;
-  refresh: () => Promise<void>;
 }
 
 export function useMeals(): UseMealsReturn {
@@ -22,7 +21,7 @@ export function useMeals(): UseMealsReturn {
       setLoading(true);
       setError(null);
       const data = await fetchMeals();
-      setMeals(data);
+      setMeals(data as Meal[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load meals');
     } finally {
@@ -30,18 +29,39 @@ export function useMeals(): UseMealsReturn {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
+
+  const resolveIngredients = async (data: MealFormData) => {
+    const resolved = [];
+    for (const row of data.ingredients) {
+      // Existing ingredient — just needs a valid id and unit
+      if (!row.isNew) {
+        if (row.ingredient_id && row.unit_id) {
+          resolved.push({ ingredient_id: row.ingredient_id, quantity: row.quantity, unit_id: row.unit_id });
+        }
+        continue;
+      }
+      // New ingredient — create it first
+      if (row.ingredient_name.trim() && row.category_id && row.unit_id) {
+        const created = await createIngredient(row.ingredient_name, row.category_id);
+        resolved.push({ ingredient_id: created.id, quantity: row.quantity, unit_id: row.unit_id });
+      }
+    }
+    return resolved;
+  };
 
   const addMeal = async (data: MealFormData) => {
-    const newMeal = await createMeal(data);
-    setMeals((prev) => [newMeal, ...prev]);
+    const ingredients = await resolveIngredients(data);
+    const { ingredients: _, ...mealData } = data;
+    const newMeal = await createMeal(mealData, ingredients);
+    setMeals((prev) => [newMeal as Meal, ...prev]);
   };
 
   const editMeal = async (id: string, data: MealFormData) => {
-    const updated = await updateMeal(id, data);
-    setMeals((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    const ingredients = await resolveIngredients(data);
+    const { ingredients: _, ...mealData } = data;
+    const updated = await updateMeal(id, mealData, ingredients);
+    setMeals((prev) => prev.map((m) => (m.id === id ? (updated as Meal) : m)));
   };
 
   const removeMeal = async (id: string) => {
@@ -49,5 +69,5 @@ export function useMeals(): UseMealsReturn {
     setMeals((prev) => prev.filter((m) => m.id !== id));
   };
 
-  return { meals, loading, error, addMeal, editMeal, removeMeal, refresh: load };
+  return { meals, loading, error, addMeal, editMeal, removeMeal };
 }
