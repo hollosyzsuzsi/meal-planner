@@ -1,78 +1,71 @@
-import { useState, useEffect, useCallback } from 'react';
-import { type WeekPlan } from '../types/plan';
-import { type ShoppingList, type ShoppingItem } from '../types/plan';
-import { buildShoppingList } from '../lib/shopping';
-import { supabase } from '../lib/supabase';
+import { useState, useCallback } from 'react';
+import { type WeekPlan, type ShoppingList, type ShoppingGroup, type ShoppingItem } from '../types/plan';
 
-interface UseShoppingReturn {
-  savedPlans: WeekPlan[];
-  selectedPlan: WeekPlan | null;
-  shoppingList: ShoppingList | null;
-  loadingPlans: boolean;
-  selectPlan: (plan: WeekPlan) => void;
-  toggleItem: (category: string, itemName: string) => void;
-  clearChecked: () => void;
-}
-
-export function useShopping(): UseShoppingReturn {
-  const [savedPlans, setSavedPlans] = useState<WeekPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<WeekPlan | null>(null);
+export function useShopping() {
   const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
-  const [loadingPlans, setLoadingPlans] = useState(true);
 
-  // Load all saved week plans
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('week_plans')
-          .select('*')
-          .order('created_at', { ascending: false });
+  const buildFromPlan = useCallback((plan: WeekPlan) => {
+    // Merge ingredients across all days, grouped by category
+    const merged = new Map<string, ShoppingItem>();
 
-        if (error) throw error;
+    for (const day of plan.days) {
+      for (const mi of (day.meal.meal_ingredients ?? [])) {
+        const key = `${mi.ingredient_id}__${mi.unit.id}`;
+        const existing = merged.get(key);
 
-        const plans: WeekPlan[] = (data ?? []).map((row) => ({
-          id: row.id,
-          week_start: row.week_start,
-          days: row.plan_json,
-          created_at: row.created_at,
-        }));
-
-        setSavedPlans(plans);
-
-        // Auto-select the most recent plan
-        if (plans.length > 0) {
-          selectPlanAndBuild(plans[0]);
+        if (existing) {
+          existing.quantity += mi.quantity;
+          if (!existing.meals.includes(day.meal.name)) {
+            existing.meals.push(day.meal.name);
+          }
+        } else {
+          merged.set(key, {
+            ingredient_id: mi.ingredient_id,
+            ingredient_name: mi.ingredient.name,
+            category_id: mi.ingredient.category_id,
+            category_name: mi.ingredient.category?.name ?? 'other',
+            quantity: mi.quantity,
+            unit: mi.unit.name,
+            meals: [day.meal.name],
+            checked: false,
+          });
         }
-      } catch (err) {
-        console.error('Failed to load plans', err);
-      } finally {
-        setLoadingPlans(false);
       }
-    };
-    load();
+    }
+
+    // Group by category
+    const byCategory = new Map<string, ShoppingGroup>();
+    for (const item of merged.values()) {
+      const existing = byCategory.get(item.category_id);
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        byCategory.set(item.category_id, {
+          category_id: item.category_id,
+          category_name: item.category_name,
+          items: [item],
+        });
+      }
+    }
+
+    const groups: ShoppingGroup[] = Array.from(byCategory.values())
+      .map((g) => ({ ...g, items: g.items.sort((a, b) => a.ingredient_name.localeCompare(b.ingredient_name)) }))
+      .sort((a, b) => a.category_name.localeCompare(b.category_name));
+
+    setShoppingList({ week_plan_id: plan.id, week_start: plan.week_start, groups });
   }, []);
 
-  const selectPlanAndBuild = useCallback((plan: WeekPlan) => {
-    setSelectedPlan(plan);
-    setShoppingList(buildShoppingList(plan));
-  }, []);
-
-  const selectPlan = useCallback((plan: WeekPlan) => {
-    selectPlanAndBuild(plan);
-  }, [selectPlanAndBuild]);
-
-  const toggleItem = useCallback((category: string, itemName: string) => {
+  const toggleItem = useCallback((category_id: string, ingredient_id: string) => {
     setShoppingList((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
-        groups: prev.groups.map((group) => {
-          if (group.category !== category) return group;
+        groups: prev.groups.map((g) => {
+          if (g.category_id !== category_id) return g;
           return {
-            ...group,
-            items: group.items.map((item) =>
-              item.name === itemName ? { ...item, checked: !item.checked } : item
+            ...g,
+            items: g.items.map((item) =>
+              item.ingredient_id === ingredient_id ? { ...item, checked: !item.checked } : item
             ),
           };
         }),
@@ -85,21 +78,13 @@ export function useShopping(): UseShoppingReturn {
       if (!prev) return prev;
       return {
         ...prev,
-        groups: prev.groups.map((group) => ({
-          ...group,
-          items: group.items.map((item) => ({ ...item, checked: false })),
+        groups: prev.groups.map((g) => ({
+          ...g,
+          items: g.items.map((item) => ({ ...item, checked: false })),
         })),
       };
     });
   }, []);
 
-  return {
-    savedPlans,
-    selectedPlan,
-    shoppingList,
-    loadingPlans,
-    selectPlan,
-    toggleItem,
-    clearChecked,
-  };
+  return { shoppingList, buildFromPlan, toggleItem, clearChecked };
 }

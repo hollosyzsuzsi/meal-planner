@@ -1,6 +1,12 @@
 import { type Meal } from '../types/meal';
-import { type DayPlan, type WeekPlan } from '../types/plan';
+import { type DayOfWeek, type WeekPlan } from '../types/plan';
 import { type UserPreferences } from '../types/prefs';
+
+// Lightweight type used only during plan generation (before DB save)
+interface PlanDay {
+  day: DayOfWeek;
+  meal: Meal;
+}
 
 const DAYS = [
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
@@ -9,7 +15,7 @@ const DAYS = [
 type Day = typeof DAYS[number];
 
 export interface GeneratePlanResult {
-  weekPlan: Omit<WeekPlan, 'id' | 'created_at'>;
+  weekPlan: { week_start: string; days: PlanDay[] };
   warnings: string[];
 }
 
@@ -35,7 +41,7 @@ export function generateWeekPlan(
   }
 
   const shuffled = shuffle([...meals]);
-  const days: DayPlan[] = [];
+  const days: PlanDay[] = [];
   const used = new Map<string, number>();
   let lastCuisine: string | null = null;
 
@@ -139,13 +145,13 @@ function countSharedIngredients(
   if (usedMeals.length === 0) return 0;
 
   const candidateIngredients = new Set(
-    candidate.ingredients.map((i) => i.name.toLowerCase().trim())
+    (candidate.meal_ingredients ?? []).map((i) => i.ingredient.name.toLowerCase().trim())
   );
 
   let shared = 0;
   for (const meal of usedMeals) {
-    for (const ing of meal.ingredients) {
-      if (candidateIngredients.has(ing.name.toLowerCase().trim())) {
+    for (const ing of (meal.meal_ingredients ?? [])) {
+      if (candidateIngredients.has(ing.ingredient.name.toLowerCase().trim())) {
         shared++;
       }
     }

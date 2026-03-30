@@ -52,7 +52,7 @@ export function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
           {meal.prep_time} min
         </span>
         <span className="meal-card__ingredient-count">
-          {meal.ingredients.length} ingredient{meal.ingredients.length !== 1 ? 's' : ''}
+          {(meal.meal_ingredients ?? []).length} ingredient{(meal.meal_ingredients ?? []).length !== 1 ? 's' : ''}
         </span>
       </div>
 

@@ -546,6 +546,24 @@ body {
   font-style: italic;
 }
 
+.day-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-card__swap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-icon--sm {
+  width: 22px;
+  height: 22px;
+}
+
 /* ─── Banners ─────────────────────────────────────────────────────────────── */
 .banner {
   display: flex;
