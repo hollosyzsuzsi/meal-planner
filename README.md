@@ -25,7 +25,6 @@ Create a `.env` file in the project root:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_CLAUDE_API_KEY=your-claude-api-key
 ```
 
 > ⚠️ Never commit `.env` to git. Add it to `.gitignore`.
@@ -53,9 +52,9 @@ src/
 
 ## Features
 
-- [x] Add, edit, delete meals with ingredients
-- [x] Filter by cuisine and search
-- [x] Dietary tag system
-- [ ] AI-powered weekly plan generation via Claude API
-- [ ] Shopping list generation
-- [ ] User preferences panel
+- Add, edit, delete meals with ingredients
+- Filter by cuisine and search
+- Dietary tag system
+- Weekly meal plan generation
+- Shopping list generation
+- User preferences panel
