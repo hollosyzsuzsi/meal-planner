@@ -1,21 +1,11 @@
 import { useState, useCallback } from 'react';
 import { type Meal } from '../types/meal';
-import { type WeekPlan, type DayOfWeek } from '../types/plan';
+import { type UsePlannerReturn } from '../types/hooks';
+import { type WeekPlan } from '../types/plan';
 import { type UserPreferences } from '../types/prefs';
 import { generateWeekPlan } from '../lib/planner';
-import { fetchWeekPlans, createWeekPlan, updateWeekPlanDay } from '../lib/supabase';
-
-interface UsePlannerReturn {
-  weekPlans: WeekPlan[];
-  selectedPlan: WeekPlan | null;
-  generating: boolean;
-  warnings: string[];
-  error: string | null;
-  generate: (meals: Meal[], prefs: UserPreferences) => Promise<void>;
-  selectPlan: (plan: WeekPlan) => void;
-  swapMeal: (dayId: string, meal_id: string) => Promise<void>;
-  loadPlans: () => Promise<void>;
-}
+import { fetchWeekPlans, createWeekPlan, updateWeekPlanDay, renameWeekPlan, deleteWeekPlan } from '../lib/supabase';
+import { formatWeekLabel } from '../utils/date';
 
 export function usePlanner(): UsePlannerReturn {
   const [weekPlans, setWeekPlans] = useState<WeekPlan[]>([]);
@@ -43,8 +33,12 @@ export function usePlanner(): UsePlannerReturn {
 
       const { weekPlan: plan, warnings: w } = generateWeekPlan(meals, prefs);
 
+      // Auto-generate a name from the week date
+      const name = `Week of ${formatWeekLabel(plan.week_start)}`;
+
       const saved = await createWeekPlan(
         plan.week_start,
+        name,
         plan.days.map((d) => ({ day: d.day, meal_id: d.meal.id }))
       );
 
@@ -65,7 +59,6 @@ export function usePlanner(): UsePlannerReturn {
 
   const swapMeal = useCallback(async (dayId: string, meal_id: string) => {
     await updateWeekPlanDay(dayId, meal_id);
-    // Refresh plans to get updated meal data
     const data = await fetchWeekPlans();
     const plans = data as WeekPlan[];
     setWeekPlans(plans);
@@ -73,5 +66,28 @@ export function usePlanner(): UsePlannerReturn {
     if (updated) setSelectedPlan(updated);
   }, []);
 
-  return { weekPlans, selectedPlan, generating, warnings, error, generate, selectPlan, swapMeal, loadPlans };
+  const renamePlan = useCallback(async (id: string, name: string) => {
+    await renameWeekPlan(id, name);
+    const update = (plans: WeekPlan[]) =>
+      plans.map((p) => (p.id === id ? { ...p, name } : p));
+    setWeekPlans((prev) => update(prev));
+    setSelectedPlan((prev) => (prev?.id === id ? { ...prev, name } : prev));
+  }, []);
+
+  const deletePlan = useCallback(async (id: string) => {
+    await deleteWeekPlan(id);
+    setWeekPlans((prev) => {
+      const remaining = prev.filter((p) => p.id !== id);
+      setSelectedPlan((cur) => {
+        if (cur?.id !== id) return cur;
+        return remaining[0] ?? null;
+      });
+      return remaining;
+    });
+  }, []);
+
+  return {
+    weekPlans, selectedPlan, generating, warnings, error,
+    generate, selectPlan, swapMeal, renamePlan, deletePlan, loadPlans,
+  };
 }

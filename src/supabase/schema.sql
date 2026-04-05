@@ -7,7 +7,7 @@ create table units (
 );
 
 insert into units (name) values
-  ('g'), ('dkg'), ('kg'), ('ml'), ('dl'), ('l'), ('tsp'), ('tbsp'), ('cup'), ('glass'), ('bottle'), ('oz'),
+  ('g'), ('kg'), ('ml'), ('l'), ('tsp'), ('tbsp'), ('cup'),
   ('piece'), ('pinch'), ('slice'), ('handful'), ('bunch');
 
 -- ─── Ingredient categories ────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ create table ingredient_categories (
 );
 
 insert into ingredient_categories (name) values
-  ('fruits & vegetables'),
+  ('produce'),
   ('meat & fish'),
   ('dairy & eggs'),
   ('grains & pasta'),
@@ -67,6 +67,7 @@ create table meal_ingredients (
 
 -- ─── Week plans ───────────────────────────────────────────────────────────────
 create table week_plans (
+  name        text not null default '',
   id          uuid primary key default uuid_generate_v4(),
   week_start  date not null,
   created_at  timestamptz not null default now()

@@ -1,15 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Meal, type MealFormData } from '../types/meal';
+import { type UseMealsReturn } from '../types/hooks';
 import { fetchMeals, createMeal, updateMeal, deleteMeal, createIngredient } from '../lib/supabase';
-
-interface UseMealsReturn {
-  meals: Meal[];
-  loading: boolean;
-  error: string | null;
-  addMeal: (data: MealFormData) => Promise<void>;
-  editMeal: (id: string, data: MealFormData) => Promise<void>;
-  removeMeal: (id: string) => Promise<void>;
-}
 
 export function useMeals(): UseMealsReturn {
   const [meals, setMeals] = useState<Meal[]>([]);

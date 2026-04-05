@@ -1,14 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type UserPreferences, type PreferencesFormData, DEFAULT_PREFERENCES } from '../types/prefs';
+import { type UserPreferences, type PreferencesFormData } from '../types/prefs';
+import { DEFAULT_PREFERENCES } from '../constants/preferences';
 import { supabase } from '../lib/supabase';
-
-interface UsePreferencesReturn {
-  prefs: UserPreferences | null;
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-  savePrefs: (data: PreferencesFormData) => Promise<void>;
-}
+import type { UsePreferencesReturn } from '../types/hooks';
 
 export function usePreferences(): UsePreferencesReturn {
   const [prefs, setPrefs] = useState<UserPreferences | null>(null);

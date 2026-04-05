@@ -1,8 +1,7 @@
+import { DAYS } from '../constants/days';
 import { type Meal } from './meal';
 
-export type DayOfWeek =
-  | 'monday' | 'tuesday' | 'wednesday'
-  | 'thursday' | 'friday' | 'saturday' | 'sunday';
+export type DayOfWeek = typeof DAYS[number];
 
 export interface WeekPlanDay {
   id: string;
@@ -14,6 +13,7 @@ export interface WeekPlanDay {
 
 export interface WeekPlan {
   id: string;
+  name: string;
   week_start: string;
   days: WeekPlanDay[];
   created_at: string;

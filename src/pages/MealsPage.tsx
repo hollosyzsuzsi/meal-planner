@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useMeals } from '../hooks/useMeals';
 import { MealCard } from '../components/meals/MealCard';
 import { MealForm } from '../components/meals/MealForm';
-import { type Meal, type MealFormData, type CuisineType } from '../types/meal';
-
-type FilterCuisine = CuisineType | 'all';
+import { type Meal, type MealFormData } from '../types/meal';
+import { type FilterCuisine } from '../types/ui';
 
 export function MealsPage() {
   const { meals, loading, error, addMeal, editMeal, removeMeal } = useMeals();

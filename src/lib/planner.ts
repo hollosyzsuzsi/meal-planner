@@ -1,16 +1,16 @@
 import { type Meal } from '../types/meal';
-import { type DayOfWeek, type WeekPlan } from '../types/plan';
+import { type DayOfWeek } from '../types/plan';
 import { type UserPreferences } from '../types/prefs';
+import { DAYS } from '../constants/days';
+import { getMonday } from '../utils/date';
+import { capitalize } from '../utils/capitalize';
+import { shuffle } from '../utils/shuffle';
 
 // Lightweight type used only during plan generation (before DB save)
 interface PlanDay {
   day: DayOfWeek;
   meal: Meal;
 }
-
-const DAYS = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
-] as const;
 
 type Day = typeof DAYS[number];
 
@@ -159,26 +159,4 @@ function countSharedIngredients(
   return shared;
 }
 
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
 
-function shuffle<T>(arr: T[]): T[] {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  return d;
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
