@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
-import { type Meal, type MealFormData, type MealIngredientFormRow, type DietaryTag, type CuisineType } from '../../types/meal';
+import { type MealFormData, type MealIngredientFormRow, type DietaryTag, type CuisineType } from '../../types/meal';
+import { type MealFormProps, type IngredientRowProps } from '../../types/props';
 import { useReferenceData } from '../../hooks/useReferenceData';
-
-const DIETARY_TAGS: DietaryTag[] = [
-  'vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free', 'high-protein', 'low-carb',
-];
-
-const CUISINE_TYPES: CuisineType[] = [
-  'italian', 'asian', 'mexican', 'mediterranean', 'american', 'indian', 'middle-eastern', 'other',
-];
+import { CUISINE_TYPES, DIETARY_TAGS } from '../../constants/meals';
 
 const emptyRow = (): MealIngredientFormRow => ({
   ingredient_id: '',
@@ -27,12 +21,6 @@ const defaultForm = (): MealFormData => ({
   dietary_tags: [],
   ingredients: [emptyRow()],
 });
-
-interface MealFormProps {
-  meal?: Meal | null;
-  onSubmit: (data: MealFormData) => Promise<void>;
-  onCancel: () => void;
-}
 
 export function MealForm({ meal, onSubmit, onCancel }: MealFormProps) {
   const { categories, units, ingredients, loading: refLoading } = useReferenceData();
@@ -214,17 +202,7 @@ export function MealForm({ meal, onSubmit, onCancel }: MealFormProps) {
 
 // ─── Ingredient row ────────────────────────────────────────────────────────────
 
-interface IngredientRowProps {
-  row: MealIngredientFormRow;
-  idx: number;
-  ingredients: ReturnType<typeof useReferenceData>['ingredients'];
-  categories: ReturnType<typeof useReferenceData>['categories'];
-  units: ReturnType<typeof useReferenceData>['units'];
-  onSelect: (id: string) => void;
-  onUpdate: (patch: Partial<MealIngredientFormRow>) => void;
-  onRemove: () => void;
-  canRemove: boolean;
-}
+
 
 function IngredientRow({ row, ingredients, categories, units, onSelect, onUpdate, onRemove, canRemove }: IngredientRowProps) {
   return (

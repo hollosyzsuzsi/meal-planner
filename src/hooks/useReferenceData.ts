@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type IngredientCategory, type Ingredient, type Unit } from '../types/meal';
+import { type UseReferenceDataReturn } from '../types/hooks';
 import { fetchCategories, fetchUnits, fetchIngredients, createIngredient } from '../lib/supabase';
-
-interface UseReferenceDataReturn {
-  categories: IngredientCategory[];
-  units: Unit[];
-  ingredients: Ingredient[];
-  loading: boolean;
-  registerIngredient: (name: string, category_id: string) => Promise<Ingredient>;
-}
 
 export function useReferenceData(): UseReferenceDataReturn {
   const [categories, setCategories] = useState<IngredientCategory[]>([]);

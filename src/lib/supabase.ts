@@ -162,11 +162,12 @@ export async function fetchWeekPlans() {
 
 export async function createWeekPlan(
   week_start: string,
+  name: string,
   days: { day: string; meal_id: string }[]
 ) {
   const { data: plan, error: planError } = await supabase
     .from('week_plans')
-    .insert({ week_start })
+    .insert({ week_start, name })
     .select()
     .single();
   if (planError) throw planError;
@@ -190,5 +191,21 @@ export async function updateWeekPlanDay(dayId: string, meal_id: string) {
     .from('week_plan_days')
     .update({ meal_id })
     .eq('id', dayId);
+  if (error) throw error;
+}
+
+export async function renameWeekPlan(id: string, name: string) {
+  const { error } = await supabase
+    .from('week_plans')
+    .update({ name })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteWeekPlan(id: string) {
+  const { error } = await supabase
+    .from('week_plans')
+    .delete()
+    .eq('id', id);
   if (error) throw error;
 }

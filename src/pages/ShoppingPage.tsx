@@ -2,16 +2,13 @@ import { useEffect, useState } from 'react';
 import { useShopping } from '../hooks/useShopping';
 import { usePlanner } from '../hooks/usePlanner';
 import { type ShoppingGroup, type ShoppingItem } from '../types/plan';
-import { type WeekPlan } from '../types/plan';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  'produce': '🥦', 'meat & fish': '🥩', 'dairy & eggs': '🥛',
-  'grains & pasta': '🌾', 'canned & dry': '🥫',
-  'condiments & spices': '🧂', 'other': '🛒',
-};
+import { CheckIcon, InfoIcon } from '../components/ui/Icons';
+import { EditablePlanName } from '../components/planner/EditablePlanName';
+import { CATEGORY_ICONS } from '../constants/categoryIcons';
+import { formatWeekLabel } from '../utils/date';
 
 export function ShoppingPage() {
-  const { weekPlans, selectedPlan, selectPlan, loadPlans } = usePlanner();
+  const { weekPlans, selectedPlan, selectPlan, renamePlan, deletePlan, loadPlans } = usePlanner();
   const { shoppingList, buildFromPlan, toggleItem, clearChecked } = useShopping();
   const [loadingPlans, setLoadingPlans] = useState(true);
 
@@ -28,13 +25,23 @@ export function ShoppingPage() {
   }, [selectedPlan, buildFromPlan]);
 
   const totalItems = shoppingList?.groups.reduce((s, g) => s + g.items.length, 0) ?? 0;
-  const checkedItems = shoppingList?.groups.reduce((s, g) => s + g.items.filter((i) => i.checked).length, 0) ?? 0;
+  const checkedItems = shoppingList?.groups.reduce(
+    (s, g) => s + g.items.filter((i) => i.checked).length, 0
+  ) ?? 0;
 
   return (
     <div className="page">
       <div className="page__header">
         <div>
-          <h1 className="page__title">Shopping list</h1>
+          {selectedPlan ? (
+            <EditablePlanName
+              name={selectedPlan.name}
+              onRename={(name) => renamePlan(selectedPlan.id, name)}
+              onDelete={() => deletePlan(selectedPlan.id)}
+            />
+          ) : (
+            <h1 className="page__title">Shopping list</h1>
+          )}
           {shoppingList && (
             <p className="page__subtitle">{checkedItems} of {totalItems} items checked</p>
           )}
@@ -72,7 +79,9 @@ export function ShoppingPage() {
         <div className="shopping-list">
           {shoppingList.groups.length === 0 ? (
             <div className="empty-state">
-              <p className="empty-state__text">No ingredients found. Make sure your meals have ingredients added.</p>
+              <p className="empty-state__text">
+                No ingredients found. Make sure your meals have ingredients added.
+              </p>
             </div>
           ) : (
             shoppingList.groups.map((group) => (
@@ -102,7 +111,11 @@ function ShoppingGroupSection({ group, onToggle }: { group: ShoppingGroup; onTog
       </div>
       <ul className="shopping-group__items">
         {group.items.map((item) => (
-          <ShoppingItemRow key={`${item.ingredient_id}-${item.unit}`} item={item} onToggle={() => onToggle(item.ingredient_id)} />
+          <ShoppingItemRow
+            key={`${item.ingredient_id}-${item.unit}`}
+            item={item}
+            onToggle={() => onToggle(item.ingredient_id)}
+          />
         ))}
       </ul>
     </div>
@@ -127,19 +140,4 @@ function ShoppingItemRow({ item, onToggle }: { item: ShoppingItem; onToggle: () 
       </span>
     </li>
   );
-}
-
-function formatWeekLabel(isoDate: string): string {
-  const date = new Date(isoDate);
-  const end = new Date(date);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(date)} – ${fmt(end)}`;
-}
-
-function CheckIcon() {
-  return <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-}
-function InfoIcon() {
-  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ flexShrink: 0 }}><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 5.5v.5" strokeLinecap="round"/></svg>;
 }

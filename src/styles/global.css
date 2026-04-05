@@ -887,3 +887,51 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ─── Editable plan name ──────────────────────────────────────────────────── */
+.editable-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.editable-name__title {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: var(--color-text);
+}
+
+.editable-name--editing {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.editable-name__input {
+  font-size: 20px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border: 0.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font);
+  outline: none;
+  width: 100%;
+  max-width: 360px;
+}
+
+.editable-name__hint {
+  font-size: 11px;
+  color: var(--color-text-hint);
+}
+
+.editable-name__confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-danger);
+}
