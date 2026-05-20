@@ -1,12 +1,13 @@
 import { type Meal, type MealFormData, type MealIngredientFormRow, type Ingredient, type IngredientCategory, type Unit } from './meal';
 import { type WeekPlan, type WeekPlanDay } from './plan';
 import { type UserPreferences, type PreferencesFormData } from './prefs';
-import { type DayOfWeek } from '../constants/days';
+import { type DayOfWeek } from '../types/plan';
 
 export interface MealCardProps {
   meal: Meal;
   onEdit: (meal: Meal) => void;
   onDelete: (id: string) => void;
+  onView?: (meal: Meal) => void;
 }
 
 export interface MealFormProps {
