@@ -42,11 +42,12 @@ export function generateWeekPlan(
 
   const shuffled = shuffle([...meals]);
   const days: PlanDay[] = [];
-  const used = new Map<string, number>();
+  const usedIds = new Set<string>();   // meals used this week — hard exclusion
+  const used = new Map<string, number>(); // usage count — for fallback scoring
   let lastCuisine: string | null = null;
 
   for (const slot of slots) {
-    const meal = pickMeal(shuffled, lastCuisine, used, prefs);
+    const meal = pickMeal(shuffled, lastCuisine, used, usedIds, prefs);
 
     if (prefs.variety_cuisines && meal.cuisine_type === lastCuisine) {
       warnings.push(
@@ -54,6 +55,7 @@ export function generateWeekPlan(
       );
     }
 
+    usedIds.add(meal.id);
     used.set(meal.id, (used.get(meal.id) ?? 0) + 1);
     lastCuisine = meal.cuisine_type;
 
@@ -106,12 +108,18 @@ function pickMeal(
   meals: Meal[],
   lastCuisine: string | null,
   used: Map<string, number>,
+  usedIds: Set<string>,
   prefs: UserPreferences
 ): Meal {
-  const scored = meals.map((meal) => {
+  // Prefer meals not yet used this week; only fall back to used ones if the
+  // pool is exhausted (fewer unique meals than cooking slots).
+  const fresh = meals.filter((m) => !usedIds.has(m.id));
+  const pool = fresh.length > 0 ? fresh : meals;
+
+  const scored = pool.map((meal) => {
     let score = 0;
 
-    // Penalise same cuisine as previous day
+    // Penalise same cuisine as previous slot
     if (prefs.variety_cuisines && meal.cuisine_type === lastCuisine) {
       score += 100;
     }
@@ -123,10 +131,10 @@ function pickMeal(
       score -= sharedCount * 10;
     }
 
-    // Penalise meals that have been used more
+    // In fallback mode (all meals used), penalise the most-repeated ones
     score += (used.get(meal.id) ?? 0) * 50;
 
-    // Add small random jitter so same-score meals vary
+    // Small random jitter so same-score meals vary
     score += Math.random() * 5;
 
     return { meal, score };
@@ -158,5 +166,3 @@ function countSharedIngredients(
   }
   return shared;
 }
-
-
