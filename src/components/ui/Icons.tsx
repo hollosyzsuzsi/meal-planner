@@ -85,3 +85,11 @@ export function ShoppingIcon() {
     </svg>
   );
 }
+
+export function RemoveIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M3 8h10" strokeLinecap="round" />
+    </svg>
+  );
+}

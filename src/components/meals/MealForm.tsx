@@ -3,6 +3,7 @@ import { type MealFormData, type MealIngredientFormRow, type DietaryTag, type Cu
 import { type MealFormProps, type IngredientRowProps } from '../../types/props';
 import { useReferenceData } from '../../hooks/useReferenceData';
 import { CUISINE_TYPES, DIETARY_TAGS } from '../../constants/meals';
+import { RemoveIcon } from '../ui/Icons';
 
 const emptyRow = (): MealIngredientFormRow => ({
   ingredient_id: '',
@@ -270,9 +271,7 @@ function IngredientRow({ row, ingredients, categories, units, onSelect, onUpdate
 
       {canRemove && (
         <button type="button" className="btn-icon btn-icon--danger" onClick={onRemove} aria-label="Remove">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M3 8h10" strokeLinecap="round" />
-          </svg>
+          <RemoveIcon />
         </button>
       )}
     </div>
