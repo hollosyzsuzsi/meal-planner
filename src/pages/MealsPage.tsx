@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMeals } from '../hooks/useMeals';
 import { MealCard } from '../components/meals/MealCard';
 import { MealForm } from '../components/meals/MealForm';
+import { MealDetailModal } from '../components/meals/MealDetailModal';
 import { type Meal, type MealFormData } from '../types/meal';
 import { type FilterCuisine } from '../types/ui';
 
@@ -9,6 +10,7 @@ export function MealsPage() {
   const { meals, loading, error, addMeal, editMeal, removeMeal } = useMeals();
   const [showForm, setShowForm] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
+  const [viewingMeal, setViewingMeal] = useState<Meal | null>(null);
   const [search, setSearch] = useState('');
   const [cuisineFilter, setCuisineFilter] = useState<FilterCuisine>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -31,6 +33,12 @@ export function MealsPage() {
     }
     await removeMeal(id);
     setDeleteConfirm(null);
+  };
+
+  // Open edit form, closing modal first if open
+  const handleOpenEdit = (meal: Meal) => {
+    setViewingMeal(null);
+    setEditingMeal(meal);
   };
 
   const cuisines = Array.from(new Set(meals.map((m) => m.cuisine_type)));
@@ -124,7 +132,8 @@ export function MealsPage() {
               <div key={meal.id}>
                 <MealCard
                   meal={meal}
-                  onEdit={(m) => setEditingMeal(m)}
+                  onView={setViewingMeal}
+                  onEdit={handleOpenEdit}
                   onDelete={handleDelete}
                 />
                 {deleteConfirm === meal.id && (
@@ -142,6 +151,14 @@ export function MealsPage() {
             ))}
           </div>
         </>
+      )}
+
+      {viewingMeal && (
+        <MealDetailModal
+          meal={viewingMeal}
+          onClose={() => setViewingMeal(null)}
+          onEdit={handleOpenEdit}
+        />
       )}
     </div>
   );
